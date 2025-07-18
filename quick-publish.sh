@@ -47,7 +47,7 @@ if git remote get-url origin >/dev/null 2>&1; then
     git push origin main
 else
     echo -e "${YELLOW}⚠️ 未配置远程仓库，跳过源码推送${NC}"
-    echo -e "${BLUE}💡 建议执行: git remote add origin git@github.com:你的用户名/blog-source.git${NC}"
+    echo -e "${BLUE}💡 建议执行: git remote add origin git@github.com:bighb/blog-source.git${NC}"
 fi
 
 # 5. 部署到GitHub Pages
