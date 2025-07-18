@@ -1,0 +1,6 @@
+[submodule "themes/cactus"]
+	path = themes/cactus
+	url = https://github.com/probberechts/hexo-theme-cactus.git
+[submodule "themes/minimalism"]
+	path = themes/minimalism
+	url = https://github.com/f-dong/hexo-theme-minimalism.git
