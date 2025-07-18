@@ -9,7 +9,7 @@ tags:
   - 最佳实践
 categories:
   - 技术
-description: 深入了解 GitHub Actions 的核心概念、工作流程设计和实际应用场景，包含完整的实践案例和最佳实践指南。
+description: 深入了解 GitHub Actions 的核心概念
 ---
 
 # GitHub Actions 完全指南：从入门到实践
