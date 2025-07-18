@@ -1,0 +1,42 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    },
+    "files.associations": {
+      "*.md": "markdown",
+      "*.yml": "yaml",
+      "*.yaml": "yaml"
+    },
+    "emmet.includeLanguages": {
+      "markdown": "html"
+    },
+    "markdown.preview.breaks": true,
+    "markdown.preview.linkify": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/public": true,
+      "**/.deploy*": true,
+      "**/db.json": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/public": true,
+      "**/.deploy*": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "yzhang.markdown-all-in-one",
+      "davidanson.vscode-markdownlint",
+      "formulahendry.auto-rename-tag",
+      "ms-vscode.vscode-json"
+    ]
+  }
+}

@@ -1,0 +1,159 @@
+name: 博客 CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'source/**'
+      - '_config.yml'
+      - 'package.json'
+      - 'themes/**'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: '是否部署到 GitHub Pages'
+        required: true
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 代码质量检查
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 🔧 安装依赖
+        run: npm ci
+
+      - name: 🔍 代码检查
+        run: |
+          echo "✅ 检查 package.json"
+          npm run --if-present lint
+          echo "✅ 检查配置文件"
+          node -e "
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            try {
+              yaml.load(fs.readFileSync('_config.yml', 'utf8'));
+              console.log('✅ _config.yml 语法正确');
+            } catch (e) {
+              console.error('❌ _config.yml 语法错误:', e.message);
+              process.exit(1);
+            }
+          " || echo "⚠️ js-yaml 未安装，跳过 YAML 检查"
+
+  # 构建博客
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: 📦 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 🔧 安装依赖
+        run: npm ci
+
+      - name: 📊 显示环境信息
+        run: |
+          echo "Node.js 版本: $(node --version)"
+          echo "npm 版本: $(npm --version)"
+          echo "Hexo 版本: $(npx hexo version)"
+
+      - name: 🧹 清理缓存
+        run: npm run clean
+
+      - name: 🏗️ 生成静态文件
+        run: |
+          npm run build
+          echo "📊 构建统计:"
+          echo "文章数量: $(find source/_posts -name '*.md' | wc -l)"
+          echo "生成文件数量: $(find public -type f | wc -l)"
+          echo "总大小: $(du -sh public | cut -f1)"
+
+      - name: 🔍 验证构建结果
+        run: |
+          if [ ! -f "public/index.html" ]; then
+            echo "❌ 构建失败: 未找到 index.html"
+            exit 1
+          fi
+          echo "✅ 构建验证通过"
+
+      - name: 📦 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: 📈 上传构建报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-report
+          path: |
+            public/
+            package.json
+            _config.yml
+          retention-days: 30
+
+  # 部署到 GitHub Pages
+  deploy:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy == 'true')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 🎉 部署成功通知
+        run: |
+          echo "🎉 博客已成功部署!"
+          echo "🌐 访问地址: ${{ steps.deployment.outputs.page_url }}"
+          echo "⏰ 部署时间: $(date)"
+
+  # 发送通知 (可选)
+  notify:
+    if: always() && (github.event_name == 'push')
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    steps:
+      - name: 📝 生成部署报告
+        run: |
+          echo "## 🌳 博客部署报告" >> $GITHUB_STEP_SUMMARY
+          echo "- **仓库**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **构建状态**: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **部署状态**: ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **部署时间**: $(date)" >> $GITHUB_STEP_SUMMARY
