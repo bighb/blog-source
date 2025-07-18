@@ -37,14 +37,7 @@ jobs:
       - name: Clean and generate
         run: |
           pnpm hexo clean
-          echo "Checking Hexo version and config:"
-          pnpm hexo version
-          echo "Theme directory content:"
-          ls -la themes/cactus/layout/
-          echo "Running hexo generate with verbose output:"
-          pnpm hexo generate --debug
-          echo "Checking if any files generated:"
-          ls -la public/ | head -10
+          pnpm hexo generate
 
       - name: List public directory (debug)
         run: |
@@ -52,12 +45,6 @@ jobs:
           ls -la public/
           echo "Total files:"
           find public/ -type f | wc -l
-          echo "Sample index.html size and content:"
-          ls -la public/index.html
-          echo "First 10 lines of index.html:"
-          head -10 public/index.html || echo "index.html is empty or doesn't exist"
-          echo "Sample post file content:"
-          find public/ -name "*.html" -path "*/2025/*" | head -1 | xargs head -5 || echo "No post files found"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
