@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true  # 确保子模块（可能包含主题）被checkout
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,24 +40,42 @@ jobs:
 
       - name: Debug Hexo setup
         run: |
+          echo "=== Node.js version ==="
+          node --version
+          echo "=== pnpm version ==="
+          pnpm --version
           echo "=== Hexo CLI version ==="
           hexo version
-          echo "=== pnpm Hexo version ==="
-          pnpm hexo version || echo "pnpm hexo command failed"
+          echo "=== Working directory ==="
+          pwd
+          echo "=== Directory structure ==="
+          ls -la
           echo "=== Source posts ==="
           ls -la source/_posts/
           echo "=== Post count ==="
           find source/_posts/ -name "*.md" | wc -l
-          echo "=== Sample post content ==="
-          find source/_posts/ -name "*.md" | head -1 | xargs head -20
-          echo "=== Hexo config (first 30 lines) ==="
-          head -30 _config.yml
+          echo "=== Installed packages ==="
+          pnpm list --depth=0
+          echo "=== Hexo config exists? ==="
+          ls -la _config.yml
+          echo "=== Themes directory ==="
+          ls -la themes/ || echo "No themes directory"
+          echo "=== Current theme files ==="
+          ls -la themes/minimalism/ || echo "No minimalism theme files"
+          echo "=== Theme config ==="
+          grep "theme:" _config.yml || echo "No theme config found"
 
       - name: Clean and generate
         run: |
+          echo "=== Cleaning ==="
           hexo clean
-          echo "=== Generate with verbose output ==="
-          hexo generate --debug
+          echo "=== After clean, public directory ==="
+          ls -la public/ || echo "No public directory after clean"
+          echo "=== Generating with debug ==="
+          hexo generate --debug 2>&1 | tee hexo_generate.log
+          echo "=== Generation completed, checking result ==="
+          echo "=== Generation log ==="
+          cat hexo_generate.log
 
       - name: List public directory (debug)
         run: |

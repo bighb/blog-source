@@ -98,8 +98,8 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 # theme: maple
-theme: cactus
-# theme: minimalism
+# theme: cactus
+theme: minimalism
 
 # Deployment
 ## 现在使用 GitHub Actions 自动部署，无需手动配置
