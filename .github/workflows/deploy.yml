@@ -40,7 +40,7 @@ jobs:
           echo "Checking Hexo version and config:"
           pnpm hexo version
           echo "Theme directory content:"
-          ls -la themes/minimalism/layout/includes/
+          ls -la themes/cactus/layout/
           echo "Running hexo generate with verbose output:"
           pnpm hexo generate --debug
           echo "Checking if any files generated:"
