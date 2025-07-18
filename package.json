@@ -19,7 +19,9 @@
     "publish": "git add . && git commit -m \"✨ 发布新内容\" && git push",
     "quick-deploy": "npm run clean && npm run build && npm run deploy",
     "update-deps": "npm update && npm audit fix",
-    "info": "node maintenance.js info"
+    "info": "node maintenance.js info",
+    "themes": "node maintenance.js themes",
+    "submodules": "node maintenance.js submodules"
   },
   "hexo": {
     "version": "7.2.0"

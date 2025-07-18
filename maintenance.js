@@ -191,6 +191,47 @@ async function showSystemInfo() {
   }
 }
 
+// 更新主题
+async function updateThemes() {
+  try {
+    log('🎨 更新主题...', 'blue');
+    
+    // 更新 cactus 主题
+    log('更新 cactus 主题...', 'cyan');
+    await runCommand('cd themes/cactus && git pull origin master', '更新 cactus 主题');
+    
+    // 更新 minimalism 主题（保持在自定义分支）
+    log('检查 minimalism 主题状态...', 'cyan');
+    const currentBranch = await new Promise((resolve) => {
+      exec('cd themes/minimalism && git branch --show-current', (error, stdout) => {
+        resolve(stdout.trim());
+      });
+    });
+    
+    if (currentBranch === 'custom-bighb') {
+      log('当前在自定义分支，保持不变', 'green');
+    } else {
+      log('切换到自定义分支...', 'yellow');
+      await runCommand('cd themes/minimalism && git checkout custom-bighb', '切换到自定义分支');
+    }
+    
+    log('✅ 主题更新完成', 'green');
+  } catch (error) {
+    log(`❌ 主题更新失败: ${error.message}`, 'red');
+  }
+}
+
+// 更新子模块
+async function updateSubmodules() {
+  try {
+    log('🔄 更新Git子模块...', 'blue');
+    await runCommand('git submodule update --remote', '更新子模块');
+    log('✅ 子模块更新完成', 'green');
+  } catch (error) {
+    log(`❌ 子模块更新失败: ${error.message}`, 'red');
+  }
+}
+
 async function main() {
   console.log('\n' + '='.repeat(60));
   log('🔧 博客维护工具', 'magenta');
@@ -245,6 +286,12 @@ async function main() {
       await generateSitemap();
       await backupContent();
       log('🎉 维护完成!', 'green');
+      break;
+    case 'themes':
+      await updateThemes();
+      break;
+    case 'submodules':
+      await updateSubmodules();
       break;
     default:
       log(`❌ 未知命令: ${command}`, 'red');

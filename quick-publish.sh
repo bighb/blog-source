@@ -41,9 +41,21 @@ echo -e "${BLUE}📦 提交更改...${NC}"
 git add .
 git commit -m "✨ $commit_message" || echo -e "${YELLOW}⚠️ 没有新的更改需要提交${NC}"
 
-# 4. 推送到远程仓库
-echo -e "${BLUE}🚀 推送到 GitHub...${NC}"
+# 4. 推送到远程仓库（博客源码）
+if git remote get-url origin >/dev/null 2>&1; then
+    echo -e "${BLUE}� 推送博客源码到GitHub...${NC}"
+    git push origin main
+else
+    echo -e "${YELLOW}⚠️ 未配置远程仓库，跳过源码推送${NC}"
+    echo -e "${BLUE}💡 建议执行: git remote add origin git@github.com:你的用户名/blog-source.git${NC}"
+fi
+
+# 5. 部署到GitHub Pages
+echo -e "${BLUE}🚀 部署到GitHub Pages...${NC}"
 git push
+
+# 6. 使用Hexo部署到GitHub Pages
+npm run deploy
 
 echo -e "${GREEN}🎉 博客发布成功!${NC}"
 echo -e "${BLUE}📍 访问地址: https://bighb.github.io${NC}"
