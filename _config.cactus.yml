@@ -1,0 +1,198 @@
+##############################################################################
+# Content
+##############################################################################
+
+# Link to a page that gives an overview of all your projects.
+# This can be an external link (e.g., to you GitHub profile) or to another
+# page within your website.
+projects_url: https://github.com/bighb
+
+# Set the page direction to RTL or LTR. default is LTR. (if you set it 'rtl', the 'vazir' font will be loaded.)
+direction: ltr
+# Configure the navigation menu.
+# A pair 'Key: url' will result in a link to 'url' with the name 'Key' in the
+# navigation menu. Optionally, you can add translations for the 'Key' in
+# languages/*.yml
+nav:
+  首页: /
+  关于: /about/
+  归档: /archives/
+  标签: /tags/
+  分类: /categories/
+  项目: https://github.com/bighb
+
+
+# Links to your social media accounts.
+# The 'icon' keys should correspond to Fontawesome icon names
+# (see https://fontawesome.com/icons?d=gallery&s=brands);
+# only 'mail' is an exception.
+# You can optionally add a 'label' key to set the title attribute on the link. 
+# 'icon' value will be used as title when 'label' is missing.
+social_links:
+  github: https://github.com/bighb
+  mail: mailto:2740916018@qq.com
+
+
+##############################################################################
+# Look and Feel
+##############################################################################
+
+# Customize the logo (i.e., the cactus) which appears in the header.
+# Logo is expected to be 16x16 px and locates the theme's source folder.
+# The default is 'logo.png'
+logo:
+  enabled: true
+  width: 50
+  height: 50
+  url: /images/logo.png
+  gravatar: false
+  grayout: true
+
+# Customize the favicons.
+# The default is 'images/favicon.ico'.
+# To allow the user to add multiple favicon sizes provide a `sizes` key.
+# I will place it in the `favicons` with the actual size. The key should be 
+# the suffix. If the suffix starts with an underscore (`_`), it'll be replaced
+# with a dash (`-`). All other special characters are preserved.
+favicon: 
+  desktop:
+    url: /images/favicon.ico
+    gravatar: false
+  android:
+    url: /images/favicon-192x192.png
+    gravatar: false
+  apple:
+    url: /images/apple-touch-icon.png
+    gravatar: false
+
+# The color scheme for syntax highlighting.
+# See source/css/_highlight for available options.
+colorscheme: github-dark
+
+# Set the body of the post to be indented so that the header on the side
+# does not cover the beginning of the post.
+post_header_in_body: false
+
+
+##############################################################################
+# Tags, Categories, Archives, Posts
+##############################################################################
+
+# Configure how the post list should be paginated.
+posts_overview:
+  show_all_posts: false
+  post_count: 10
+  sort_updated: false
+
+# Configure how the tag list should be displayed.
+tags_overview:
+  sort_updated: false
+
+# Configure how the posts should be shown.
+post:
+  show_dates: true
+  show_date_updated: false
+
+# Configure the archives
+archive:
+  sort_updated: false
+
+
+##############################################################################
+# Comments
+##############################################################################
+
+comments:
+  enabled: false
+  engine: disqus
+  disqus: 
+    shortname: your-disqus-shortname
+  gitalk:
+    client_id: your-client-id
+    client_secret: your-client-secret
+    repo: your-repo
+    owner: your-github-username
+    admin: your-github-username
+
+
+##############################################################################
+# RSS
+##############################################################################
+
+rss: /atom.xml
+
+
+##############################################################################
+# Search
+##############################################################################
+
+search:
+  enabled: false
+  engine: lunr
+
+
+##############################################################################
+# Sharing Buttons
+##############################################################################
+
+# Configure sharing buttons.
+sharing_buttons: 
+  enabled: false
+  alignment: center
+  links:
+    - link: https://www.facebook.com/sharer/sharer.php?u=
+      icon: fab fa-facebook
+    - link: https://twitter.com/intent/tweet?url=
+      icon: fab fa-twitter
+    - link: https://pinterest.com/pin/create/button/?url=
+      icon: fab fa-pinterest
+    - link: https://www.linkedin.com/shareArticle?mini=true&url=
+      icon: fab fa-linkedin
+
+
+##############################################################################
+# Misc
+##############################################################################
+
+# Configure Google Analytics. The property name of gtag is currently is expected to be 'GA_MEASUREMENT_ID'
+google_analytics: 
+  enabled: false
+  gtag: false
+  id: G-XXXXXXXXXX
+
+# Configure the copyright notice.
+copyright:
+  start_year: 2024
+  end_year: 
+
+# Configure the mathjax CDN
+mathjax:
+  enabled: false
+  js: https://polyfill.io/v3/polyfill.min.js?features=es6
+
+# Configure KaTeX math typesetting. KaTeX renders math faster than MathJax, but is less full-featured.
+katex:
+  enabled: false
+  js: https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js
+  css: https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css
+  config:
+    throwOnError: false
+    errorColor: "#cc0000"
+
+# Local search
+local_search:
+  enabled: false
+  trigger: auto
+  top_n_per_article: 1
+  unescape: false
+  preload: false
+
+# Define if Google Maps will be used in the contact page.
+google_maps:
+  enabled: false
+  api_key: your-api-key
+
+# Enable experimental features
+experimental:
+  enabled: false
+  srcset: false
