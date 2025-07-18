@@ -12,8 +12,6 @@ categories:
 description: 深入了解 GitHub Actions 的核心概念
 ---
 
-# GitHub Actions 完全指南：从入门到实践
-
 GitHub Actions 是 GitHub 提供的强大 CI/CD 平台，让开发者能够直接在代码仓库中自动化软件开发工作流程。本文将从基础概念开始，逐步深入到实际应用场景。
 
 ## 🎯 核心概念
