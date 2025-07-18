@@ -9,17 +9,10 @@ on:
 # 设置权限
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-# 确保同时只运行一个部署
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
-  # 构建作业
-  build:
+  # 构建并部署作业
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
@@ -74,20 +67,6 @@ jobs:
           echo "检查关键文件:"
           ls -la _config.yml package.json 2>/dev/null || echo "⚠️ 配置文件检查失败"
           
-      - name: 🔍 验证 Hexo 安装
-        run: |
-          if pnpm exec hexo version; then
-            echo "✅ Hexo 验证成功"
-          else
-            echo "❌ Hexo 验证失败"
-            echo "尝试显示 node_modules 状态:"
-            ls -la node_modules/.bin/ | grep hexo || echo "未找到 hexo"
-            exit 1
-          fi
-          
-          echo "📦 关键依赖检查:"
-          pnpm list --depth=0 | grep -E "(hexo|marked|ejs)" || echo "⚠️ 未找到关键依赖"
-          
       - name: 🧹 清理缓存
         run: |
           # 清理之前的构建产物
@@ -117,6 +96,7 @@ jobs:
           echo "文章数量: $(find source/_posts -name '*.md' 2>/dev/null | wc -l || echo '0')"
           echo "生成文件数量: $(find public -type f 2>/dev/null | wc -l || echo '0')"
           echo "public 目录大小: $(du -sh public 2>/dev/null || echo '未知')"
+
       - name: 🔍 验证构建结果
         run: |
           # 检查关键文件是否存在
@@ -159,20 +139,41 @@ jobs:
           echo "  - sitemap.xml: ✓"
           echo "  - 样式文件: ✓"
 
-      - name: 📤 上传构建产物
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./public
-          retention-days: 1  # 减少存储空间占用
-
-  # 部署作业
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 部署到 GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: � 部署到 GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 配置 Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # 克隆目标仓库
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/bighb/bighb.github.io.git deploy_repo
+          
+          # 进入目标仓库目录
+          cd deploy_repo
+          
+          # 清空现有内容（保留 .git 目录）
+          find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
+          
+          # 复制新生成的文件
+          cp -r ../public/* .
+          
+          # 添加所有更改
+          git add -A
+          
+          # 检查是否有更改
+          if git diff --staged --quiet; then
+            echo "📌 没有内容更改，跳过部署"
+            exit 0
+          fi
+          
+          # 提交更改
+          COMMIT_MSG="Site updated: $(date '+%Y-%m-%d %H:%M:%S')"
+          git commit -m "$COMMIT_MSG"
+          
+          # 推送到 master 分支
+          git push origin master
+          
+          echo "✅ 部署完成！"
+          echo "🌐 网站地址: https://bighb.github.io"
