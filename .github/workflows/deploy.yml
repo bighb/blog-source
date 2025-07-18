@@ -34,10 +34,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Hexo CLI globally
+        run: pnpm add -g hexo-cli
+
+      - name: Debug Hexo setup
+        run: |
+          echo "=== Hexo CLI version ==="
+          hexo version
+          echo "=== pnpm Hexo version ==="
+          pnpm hexo version || echo "pnpm hexo command failed"
+          echo "=== Source posts ==="
+          ls -la source/_posts/
+          echo "=== Post count ==="
+          find source/_posts/ -name "*.md" | wc -l
+          echo "=== Sample post content ==="
+          find source/_posts/ -name "*.md" | head -1 | xargs head -20
+          echo "=== Hexo config (first 30 lines) ==="
+          head -30 _config.yml
+
       - name: Clean and generate
         run: |
-          pnpm hexo clean
-          pnpm hexo generate
+          hexo clean
+          echo "=== Generate with verbose output ==="
+          hexo generate --debug
 
       - name: List public directory (debug)
         run: |
@@ -45,6 +64,10 @@ jobs:
           ls -la public/
           echo "Total files:"
           find public/ -type f | wc -l
+          echo "HTML files and their sizes:"
+          find public/ -name "*.html" -exec ls -la {} \;
+          echo "Sample HTML content (first 10 lines):"
+          find public/ -name "*.html" | head -1 | xargs head -10 || echo "No HTML files found"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
