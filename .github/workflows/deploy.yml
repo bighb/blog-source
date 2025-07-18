@@ -32,34 +32,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: 安装 pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
       - name: 安装依赖
         run: |
-          # 清理 npm 缓存
-          npm cache clean --force
+          # 使用 pnpm 安装依赖，更稳定
+          pnpm install --frozen-lockfile || pnpm install
           
-          # 尝试 npm ci，如果失败则使用 npm install
-          if ! npm ci --prefer-offline --no-audit; then
-            echo "npm ci 失败，尝试使用 npm install"
-            rm -rf node_modules package-lock.json
-            npm install --legacy-peer-deps
-          fi
-          
-          # 验证 hexo 是否安装成功
+          # 验证 hexo 是否可用
           if ! command -v npx hexo &> /dev/null; then
-            echo "Hexo 未正确安装，重新安装"
-            npm install hexo-cli -g
-            npm install hexo --save
+            echo "安装 hexo-cli"
+            pnpm add hexo-cli
           fi
 
       - name: 📊 显示环境信息
         run: |
           echo "Node.js 版本: $(node --version)"
-          echo "npm 版本: $(npm --version)"
+          echo "pnpm 版本: $(pnpm --version)"
           echo "Hexo 版本: $(npx hexo version || echo 'Hexo 未找到')"
           echo "检查依赖安装状态:"
-          npm list --depth=0 | head -10
+          pnpm list --depth=0 | head -10
           
       - name: 🧹 清理缓存
         run: |
