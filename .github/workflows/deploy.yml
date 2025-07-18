@@ -37,7 +37,14 @@ jobs:
       - name: Clean and generate
         run: |
           pnpm hexo clean
-          pnpm hexo generate
+          echo "Checking Hexo version and config:"
+          pnpm hexo version
+          echo "Theme directory content:"
+          ls -la themes/minimalism/layout/includes/
+          echo "Running hexo generate with verbose output:"
+          pnpm hexo generate --debug
+          echo "Checking if any files generated:"
+          ls -la public/ | head -10
 
       - name: List public directory (debug)
         run: |
