@@ -1,5 +1,5 @@
 ---
-title: GitHub Actions 完全指南：从入门到实践
+title: GitHub Actions 从入门到实践
 date: 2025-07-18 15:42:00
 tags:
   - GitHub Actions
