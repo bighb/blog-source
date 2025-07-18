@@ -28,15 +28,29 @@ jobs:
           fetch-depth: 0  # 获取完整历史，用于获取 git 信息
           submodules: recursive  # 递归检出子模块
 
-      - name: 设置 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'pnpm'
+      - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "18"
 
-      - name: 安装 pnpm
-        run: |
-          corepack enable
+    - name: Enable Corepack and Setup pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
           corepack prepare pnpm@latest --activate
 
       - name: 安装依赖
