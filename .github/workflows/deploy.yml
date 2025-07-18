@@ -8,9 +8,16 @@ on:
 
 # 设置权限
 permissions:
-  contents: read
-
-jobs:
+  contents: r      - name: 🚀 部署到 GitHub Pages
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          # 配置 Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # 克隆目标仓库
+          git clone https://x-access-token:${DEPLOY_TOKEN}@github.com/bighb/bighb.github.io.git deploy_repo
   # 构建并部署作业
   build-and-deploy:
     runs-on: ubuntu-latest
