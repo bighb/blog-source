@@ -18,9 +18,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true  # 确保子模块（可能包含主题）被checkout
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,58 +32,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Hexo CLI globally
+      - name: Install Hexo CLI
         run: pnpm add -g hexo-cli
 
-      - name: Debug Hexo setup
+      - name: Build site
         run: |
-          echo "=== Node.js version ==="
-          node --version
-          echo "=== pnpm version ==="
-          pnpm --version
-          echo "=== Hexo CLI version ==="
-          hexo version
-          echo "=== Working directory ==="
-          pwd
-          echo "=== Directory structure ==="
-          ls -la
-          echo "=== Source posts ==="
-          ls -la source/_posts/
-          echo "=== Post count ==="
-          find source/_posts/ -name "*.md" | wc -l
-          echo "=== Installed packages ==="
-          pnpm list --depth=0
-          echo "=== Hexo config exists? ==="
-          ls -la _config.yml
-          echo "=== Themes directory ==="
-          ls -la themes/ || echo "No themes directory"
-          echo "=== Current theme files ==="
-          ls -la themes/minimalism/ || echo "No minimalism theme files"
-          echo "=== Theme config ==="
-          grep "theme:" _config.yml || echo "No theme config found"
-
-      - name: Clean and generate
-        run: |
-          echo "=== Cleaning ==="
           hexo clean
-          echo "=== After clean, public directory ==="
-          ls -la public/ || echo "No public directory after clean"
-          echo "=== Generating with debug ==="
-          hexo generate --debug 2>&1 | tee hexo_generate.log
-          echo "=== Generation completed, checking result ==="
-          echo "=== Generation log ==="
-          cat hexo_generate.log
-
-      - name: List public directory (debug)
-        run: |
-          echo "Public directory contents:"
-          ls -la public/
-          echo "Total files:"
-          find public/ -type f | wc -l
-          echo "HTML files and their sizes:"
-          find public/ -name "*.html" -exec ls -la {} \;
-          echo "Sample HTML content (first 10 lines):"
-          find public/ -name "*.html" | head -1 | xargs head -10 || echo "No HTML files found"
+          hexo generate
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
