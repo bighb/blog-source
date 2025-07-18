@@ -1,175 +1,32 @@
-name: Deploy Blog
+name: Hexo Deploy
 
-# 触发条件：推送到 main 分支或手动触发
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
-# 设置权限
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# 确保同时只运行一个部署
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  # 构建作业
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0  # 获取完整历史，用于获取 git 信息
-          submodules: recursive  # 递归检出子模块
+          node-version: '18'
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: "18"
+      - name: Install dependencies
+        run: npm install
 
-    - name: Enable Corepack and Setup pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
+      - name: Generate static files
+        run: npm run build
 
-    - name: Get pnpm store directory
-      id: pnpm-cache
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-    - name: Setup pnpm cache
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-store-
-
-    - name: 安装依赖
-      run: |
-        # 使用 pnpm 安装依赖，更稳定
-        pnpm install --frozen-lockfile || {
-          echo "⚠️ frozen-lockfile 失败，尝试常规安装"
-          pnpm install
-        }
-        
-        # 确保 hexo-cli 可用，从 package.json 可以看出项目已经有 hexo 依赖
-        # 检查是否需要全局安装 hexo-cli
-        if ! pnpm exec hexo version &> /dev/null; then
-          echo "📦 安装 hexo-cli"
-          pnpm add hexo-cli --save-dev
-        fi
-
-    - name: 📊 显示环境信息
-      run: |
-        echo "Node.js 版本: $(node --version)"
-        echo "pnpm 版本: $(pnpm --version)"
-        echo "当前工作目录: $(pwd)"
-        echo "检查关键文件:"
-        ls -la _config.yml package.json 2>/dev/null || echo "⚠️ 配置文件检查失败"
-        
-    - name: 🔍 验证 Hexo 安装
-      run: |
-        if pnpm exec hexo version; then
-          echo "✅ Hexo 验证成功"
-        else
-          echo "❌ Hexo 验证失败"
-          echo "尝试显示 node_modules 状态:"
-          ls -la node_modules/.bin/ | grep hexo || echo "未找到 hexo"
-          exit 1
-        fi
-        
-        echo "📦 关键依赖检查:"
-        pnpm list --depth=0 | grep -E "(hexo|marked|ejs)" || echo "⚠️ 未找到关键依赖"
-        
-    - name: 🧹 清理缓存
-      run: |
-        # 清理之前的构建产物
-        pnpm exec hexo clean || {
-          echo "⚠️ hexo clean 失败，手动清理"
-          rm -rf public .deploy_git db.json
-        }
-        echo "✅ 缓存清理完成"
-
-    - name: 🏗️ 生成静态文件
-      run: |
-        # 生成静态文件
-        pnpm exec hexo generate || {
-          echo "❌ hexo generate 失败，尝试备用方案"
-          pnpm run build || {
-            echo "❌ 所有构建方案都失败了"
-            exit 1
-          }
-        }
-        
-        echo "📊 构建统计:"
-        echo "文章数量: $(find source/_posts -name '*.md' 2>/dev/null | wc -l || echo '0')"
-        echo "生成文件数量: $(find public -type f 2>/dev/null | wc -l || echo '0')"
-        echo "public 目录大小: $(du -sh public 2>/dev/null || echo '未知')"
-        
-    - name: 🔍 验证构建结果
-      run: |
-        # 检查关键文件是否存在
-        MISSING_FILES=()
-        
-        if [ ! -f "public/index.html" ]; then
-          MISSING_FILES+=("index.html")
-        fi
-        
-        if [ ! -d "public/archives" ]; then
-          MISSING_FILES+=("archives目录")
-        fi
-        
-        if [ ! -f "public/atom.xml" ]; then
-          MISSING_FILES+=("atom.xml")
-        fi
-        
-        if [ ! -f "public/sitemap.xml" ]; then
-          MISSING_FILES+=("sitemap.xml")
-        fi
-        
-        # 检查是否有CSS和JS文件
-        if [ ! -d "public/style" ] && [ ! -d "public/css" ]; then
-          MISSING_FILES+=("样式文件目录")
-        fi
-        
-        if [ ${#MISSING_FILES[@]} -gt 0 ]; then
-          echo "❌ 构建验证失败，缺少以下文件:"
-          printf '%s\n' "${MISSING_FILES[@]}"
-          echo "📁 public 目录内容:"
-          ls -la public/ || echo "无法列出 public 目录"
-          exit 1
-        fi
-        
-        echo "✅ 构建验证通过"
-        echo "📊 验证结果:"
-        echo "  - index.html: ✓"
-        echo "  - archives: ✓"
-        echo "  - atom.xml: ✓"
-        echo "  - sitemap.xml: ✓"
-        echo "  - 样式文件: ✓"
-
-    - name: 📤 上传构建产物
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./public
-        retention-days: 1  # 减少存储空间占用
-
-  # 部署作业
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 部署到 GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
