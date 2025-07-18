@@ -1,0 +1,54 @@
+name: 博客自动部署
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'source/**'
+      - '_config*.yml'
+      - 'package.json'
+      - 'themes/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: 📦 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 🔧 安装依赖
+        run: |
+          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+          echo "✅ Hexo 版本: $(npx hexo version)"
+
+      - name: 🏗️ 构建博客
+        run: |
+          npx hexo clean
+          npx hexo generate
+          echo "✅ 构建完成，生成 $(find public -name '*.html' | wc -l) 个页面"
+
+      - name: 🚀 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "🚀 自动部署: ${{ github.event.head_commit.message }}"
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
